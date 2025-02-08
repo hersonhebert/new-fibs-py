@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: fibos
+Version: 1.0.0.10
+Summary: Package to calcule Occluded Surfaces
+Author: Herson Hebert Mendes Soares
+Requires-Python: <3.11, <4
+License-File: LICENSE
+Requires-Dist: setuptools==70.0.0
+Requires-Dist: numpy==1.22.4
+Requires-Dist: biopython==1.84
+Requires-Dist: testresources==2.0.1
+Requires-Dist: pandas==2.2.3
+Requires-Dist: wheel==0.45.0
