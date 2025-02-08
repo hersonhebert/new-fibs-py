@@ -1,9 +1,9 @@
 import ctypes as ct
 import numpy as np
 import os
-import main75
-import ds75
-import surfcal76
+from . import main75
+from . import ds75
+from . import surfcal76
 
 def call_main(iresf, iresl, maxres, maxat, meth):
     resnum = (ct.c_int*maxres)()

@@ -1,5 +1,5 @@
 import os
-import cleaner
+from . import cleaner
 import main_intermediary
 import pkgutil
 import shutil
@@ -10,7 +10,7 @@ from Bio import PDB
 from read_os import read_prot
 from folders_manipulate import create_folder
 from folders_manipulate import change_files
-from respak import osp
+from .respak import osp
 
 MAX_RES = 10000
 MAX_AT = 50000
