@@ -1,7 +1,7 @@
 from Bio.PDB import PDBList
 import os
 import shutil
-import renum75
+from . import renum75
 
 def get_file(file):
     path = os.getcwd()
