@@ -1,9 +1,10 @@
-from . import respak75
 import os
 import shutil
 import pandas as pd
 import re
+from .utils import _load_library
 
+respak75 = _load_library("respak75")
 
 
 def osp(prot_file):
@@ -14,7 +15,7 @@ def osp(prot_file):
     else:
         if(prot_file!="prot.srf"):
             shutil.copy(prot_file,"prot.srf")
-        respak75.respak()
+        respak75.respak_()
         if(prot_file!="prot.srf"):
             os.remove("prot.srf")
         prot_name = prot_file.removesuffix(".srf")

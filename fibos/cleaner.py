@@ -1,7 +1,9 @@
 from Bio.PDB import PDBList
 import os
 import shutil
-from . import renum75
+from .utils import _load_library
+
+renum75 = _load_library('renum75')
 
 def get_file(file):
     path = os.getcwd()
@@ -53,7 +55,7 @@ def clean(file):
                         if t == False:
                             new_file.write(line)
         new_file.write("END")
-    renum75.renum()
+    renum75.renum_()
     with open("new.pdb","r") as file:
        for line in file:
            if not ("END" in line):

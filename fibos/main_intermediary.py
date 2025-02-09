@@ -1,20 +1,32 @@
 import ctypes as ct
 import numpy as np
 import os
-from . import main75
-from . import ds75
-from . import surfcal76
+from .utils import _load_library
+
+main75 = _load_library("main75")
+ds75 = _load_library("ds75")
+surfcal76 = _load_library("surfcal76")
 
 def call_main(iresf, iresl, maxres, maxat, meth):
     resnum = (ct.c_int*maxres)()
     x = (ct.c_double*maxat)()
     y = (ct.c_double*maxat)()
     z = (ct.c_double*maxat)()
-    natm = np.array([1], dtype=np.int_)
-    main75.main(resnum,natm,x,y,z,iresf,iresl)
+    natm = (ct.c_int * 1)()
+    natm[0] = 0
+    ires_f = (ct.c_int * 1)()
+    main75.main_(resnum,natm,x,y,z,iresf,iresl)
+    meth_f = (ct.c_int * 1)()
+    meth_f[0] = meth
+    if (iresf < resnum[1]):
+        print("Residue(s) to calculate not in PDB file.")
+    elif (iresl > resnum[natm[0]]):
+        print("Residue(s) to calculate not in PDB file.")
+
     for ires in range(1, iresl+1):
-        main75.main_intermediate(x,y,z,ires,resnum,natm[0])
-        main75.main_intermediate01(x,y,z,ires,resnum,natm[0])
-        ds75.runsims(meth)
-        surfcal76.surfcal()
+        ires_f[0] = ires
+        main75.main_intermediate_(x,y,z,ires_f,resnum,natm)
+        main75.main_intermediate01_(x,y,z,ires_f,resnum,natm)
+        ds75.runsims_(meth_f)
+        surfcal76.surfcal_()
     os.rename("file.srf","prot.srf")

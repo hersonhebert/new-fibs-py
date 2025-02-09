@@ -56,7 +56,8 @@ python_sources = [
     'fibos/read_Disp.py',
     'fibos/read_os.py',
     'fibos/read_prot.py',
-    'fibos/respak.py'
+    'fibos/respak.py',
+    'fibos/utils.py',
 ]
 
 # Install Python files

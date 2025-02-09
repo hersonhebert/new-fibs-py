@@ -57,7 +57,8 @@ c********************************************************************
        double precision b(maxat)
        double precision c(maxat)
 
-20     format('   Residue(s) to calculate not in PDB file.')
+c20     format('Residue(s) to calculate not in PDB file.')
+
 
         do i = 1,maxres
             chain(i) = ""
@@ -109,12 +110,6 @@ c        print*, 'naa = ', naa
 c Close pdb file
          close(unit=1)
 
-c Check that range of interest is in pdb file
-       if (iresf .lt. resnum(1)) then
-         write(6,20)
-       else if (iresl .gt. resnum(natm)) then
-         write(6,20)
-       end if
 
        open(unit = kanala, file = 'atype.txt', status = 'unknown')
        do I=1,maxat
@@ -206,7 +201,7 @@ c           Write pdb records for residue of interest
             I = 1
             stat = 1
             do while ((stat >= 0) .and. (I <= maxres))
-                read(kanala,'(a)', iostat=stat)chain(I)
+               read(kanala,'(a)', iostat=stat)chain(I)
                 I = I+1
             end do
             close(kanala)
@@ -222,7 +217,7 @@ c           Write pdb records for residue of interest
 c Write pdb records for residue of interest
          call wrtresi (ires,atype,restype,chain,resnum,x,natm,
      &   maxat,maxres)
-c Write pdb records for rest of protein
+cc Write pdb records for rest of protein
          call wrtresj (ires,atype,restype,chain,resnum,x,natm,
      &   maxat,maxres)
 
@@ -550,7 +545,7 @@ c Open the file for output
        open(unit=8,file='part_i.pdb',status='unknown')
 
 
-c Find atom C of residue (i-1)
+cc Find atom C of residue (i-1)
        do 100 j=1,natm
          if ((resnum(j) .eq. (ires-1)) .and.
      &   (atype(j) .eq. ' C  ')) then

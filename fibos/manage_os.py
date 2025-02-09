@@ -1,16 +1,18 @@
 import os
 from . import cleaner
-import main_intermediary
+from . import main_intermediary
 import pkgutil
 import shutil
 import tempfile
 from pathlib import Path
 from Bio.PDB import PDBParser
 from Bio import PDB
-from read_os import read_prot
-from folders_manipulate import create_folder
-from folders_manipulate import change_files
-from .respak import osp
+from .read_os import read_prot
+from .folders_manipulate import create_folder
+from .folders_manipulate import change_files
+from .utils import _load_library
+
+respak75 = _load_library("respak75")
 
 MAX_RES = 10000
 MAX_AT = 50000
