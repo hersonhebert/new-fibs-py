@@ -9,7 +9,7 @@ build-backend = "mesonpy"
 
 [project]
 name = "fibos"
-version = "1.0.0.10"
+version = "1.0.1"
 description = "Package to calculate Occluded Surfaces"
 authors = [
     {name = "Herson Hebert Mendes Soares"}

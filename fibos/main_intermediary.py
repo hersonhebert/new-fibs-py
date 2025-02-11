@@ -18,10 +18,6 @@ def call_main(iresf, iresl, maxres, maxat, meth):
     main75.main_(resnum,natm,x,y,z,iresf,iresl)
     meth_f = (ct.c_int * 1)()
     meth_f[0] = meth
-    if (iresf < resnum[1]):
-        print("Residue(s) to calculate not in PDB file.")
-    elif (iresl > resnum[natm[0]]):
-        print("Residue(s) to calculate not in PDB file.")
 
     for ires in range(1, iresl+1):
         ires_f[0] = ires
