@@ -1,6 +1,7 @@
 project('fibos', 
         ['c', 'fortran'],
-        version: '1.0.1',
+        version: '2.0.0',
+	license: 'MIT',
         default_options: [
             'buildtype=release',
             'warning_level=2',
@@ -51,7 +52,6 @@ python_sources = [
     'fibos/cleaner.py',
     'fibos/folders_manipulate.py',
     'fibos/main_intermediary.py',
-    'fibos/makefile.py',
     'fibos/manage_os.py',
     'fibos/read_Disp.py',
     'fibos/read_os.py',
