@@ -1,7 +1,8 @@
 [project]
 name = "fibos"
-version = "2.0.0"
+version = "2.0.1"
 description = "Package to calculate Occluded Surfaces"
+readme = "README.md"
 authors = [
     {name = "Herson Hebert Mendes Soares"}
 ]
