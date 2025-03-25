@@ -13,7 +13,7 @@ the use of Fibonacci spirals for surface point distribution. This modification r
 ensures a more uniform and even distribution of surface dots, improving the accuracy
 of the algorithm.
 
-R fibos version is available to install by CRAN.
+R fibos version is available to install by [CRAN](https://cran.r-project.org/web/packages/fibos/index.html).
 
 ## Operating Systems
 
