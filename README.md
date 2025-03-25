@@ -4,7 +4,7 @@ editor_options:
     wrap: sentence
 ---
 
-# FIBOS Python
+# FIBOS
 
 The Occluded Surface (OS) algorithm is a widely used approach for analyzing atomic packing in biomolecules. 
 Here, we introduce **fibos**, an R and Python package that extends the OS methodology with enhancements. 
@@ -266,7 +266,3 @@ determined structures and the same structures predicted by AlphaFold (AF).
 Fleming PJ, Richards FM. Protein packing: Dependence on protein size, secondary structure and amino acid composition. J Mol Biol 2000;299:487–98.
 
 Pattabiraman N, Ward KB, Fleming PJ. Occluded molecular surface: Analysis of protein packing. J Mol Recognit 1995;8:334–44.
-
-## Status
-
-In Progress.
