@@ -69,9 +69,3 @@ environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\
 # --- Configuração Específica para macOS ---
 # [tool.cibuildwheel.macos]
 # environment = { } # Geralmente não necessário se o 'brew install gcc' funcionar e o PATH for ajustado
-
-# --- Configuração de Teste (Recomendado) ---
-# test-requires = ["pytest"] # Ou outra ferramenta de teste
-# Comando para rodar os testes após a instalação da wheel construída
-# Ajuste o caminho para seus testes
-# test-command = "pytest {project}/tests"
