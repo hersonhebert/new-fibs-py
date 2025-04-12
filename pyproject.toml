@@ -1,38 +1,103 @@
+# pyproject.toml
+
 [project]
 name = "fibos"
 version = "2.0.3"
 description = "Package to calculate Occluded Surfaces"
 readme = "README.md"
 authors = [
-{name = "Herson Hebert Mendes Soares"}
+    {name = "Herson Hebert Mendes Soares"}
 ]
+# Mínima versão Python suportada pelo seu pacote
 requires-python = ">=3.8"
+# Dependências de RUNTIME (necessárias para usar o pacote instalado)
 dependencies = [
-"numpy>=1.22.4",
-"biopython>=1.84",
-"testresources>=2.0.1",
-"pandas>=2.2.3",
+    "numpy>=1.22.4",
+    "biopython>=1.84",
+    "testresources>=2.0.1",
+    "pandas>=2.2.3",
 ]
+
 [build-system]
+# Dependências de BUILD (necessárias para executar o build com meson-python)
 requires = [
-"meson-python>=0.13.1",
-"numpy>=1.22.4",
-"wheel>=0.45.0",
-"setuptools>=70.0.0",
+    "meson-python>=0.13.1",
+    "numpy>=1.22.4",  # NumPy é frequentemente necessário durante o build também (headers, etc.)
+    "wheel>=0.45.0",  # Para gerar wheels
+    # "setuptools>=70.0.0", # Geralmente não é estritamente necessário com meson-python, mas não costuma atrapalhar. Pode remover se quiser.
 ]
+# Especifica que meson-python é o backend de build
 build-backend = "mesonpy"
-[tool.meson-python]
-limited-api = false
+
+# [tool.meson-python] # Configurações específicas do meson-python (se houver)
+# limited-api = false
+
 [project.urls]
-#Add your project URLs here, for example:
-#Homepage = "https://github.com/username/fibos"
-#Documentation = "https://fibos.readthedocs.io/"
-[tool.setuptools]
-packages = ["fibos"]
-[tool.setuptools.package-data]
-fibos = ["radii", "pattern"]
-[tool.cibuildwheel.macos]
-# Certifique-se que a verbosidade está alta (2 ou 3)
+# Preencha com as URLs reais do seu projeto
+# Homepage = "https://github.com/seu-usuario/fibos"
+# Documentation = "https://fibos.readthedocs.io/"
+# Repository = "https://github.com/seu-usuario/fibos"
+
+# --- ATENÇÃO: Configuração Setuptools ---
+# Como você está usando 'meson-python' como build-backend, as seções
+# [tool.setuptools] e [tool.setuptools.package-data] são GERALMENTE IGNORADAS
+# durante o build da wheel.
+# A instalação de pacotes Python e dados (como 'radii', 'pattern') DEVE ser
+# configurada dentro do seu arquivo 'meson.build' usando funções como:
+# - python = import('python')
+# - python.install_sources(...)
+# - install_subdir('fibos/radii', install_dir: python.get_install_dir() / 'fibos/radii')
+# - install_data(...)
+# Comentei essas seções para evitar confusão. Certifique-se que seu meson.build faz a instalação!
+# [tool.setuptools]
+# packages = ["fibos"]
+# [tool.setuptools.package-data]
+# fibos = ["radii", "pattern"]
+
+# --- Configuração Completa do cibuildwheel ---
+[tool.cibuildwheel]
+# Comando executado ANTES de cada build de wheel (em ambiente isolado).
+# Essencial para instalar dependências de build/runtime como NumPy.
+before-build = "pip install numpy"
+
+# Pula combinações de build não desejadas. Ajuste conforme necessário.
+# Ex: Pula Windows 32-bit, PyPy, Python 3.8 (já que o workflow foca em 3.9+), musl Linux.
+skip = "*-win32 pp* cp38-* *-musllinux*"
+
+# Define as imagens Docker a serem usadas para builds Linux (Manylinux).
+# Garante compatibilidade ampla com distribuições Linux.
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux_2_28" # Para builds ARM64 no Linux (se ativado no workflow)
+
+# --- Configuração Específica para Windows ---
+[tool.cibuildwheel.windows]
+# Aumenta a verbosidade para builds Windows (ajuda a depurar)
 build-verbosity = 2
-# Certifique-se que FC está definido CORRETAMENTE para ARM Mac
-environment = { FC = "/opt/homebrew/bin/gfortran" }
+# Define variáveis de ambiente para o build no Windows.
+# Crucial: Adiciona o compilador Fortran (MinGW gfortran via choco) ao PATH.
+# Verifique se o caminho do choco mingw no runner do GitHub Actions ainda é este.
+environment = { PATH = "{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin" }
+
+# --- Configuração Específica para macOS ---
+[tool.cibuildwheel.macos]
+# Aumenta a verbosidade para builds macOS (essencial para depurar o erro atual)
+build-verbosity = 2
+# Define variáveis de ambiente para o build no macOS.
+# Crucial: Define explicitamente o compilador Fortran (gfortran via brew) para Meson.
+# O caminho '/opt/homebrew/bin/gfortran' é para Macs ARM (runners macos-14).
+# Para Macs Intel (runners macos-latest), o caminho seria '/usr/local/bin/gfortran'.
+# Esta configuração deve funcionar para o runner ARM que está falhando.
+environment = {
+    FC = "/opt/homebrew/bin/gfortran",
+    # Opcional: Definir CC/CXX se você tiver C/C++ também, para garantir consistência
+    # CC = "/opt/homebrew/bin/gcc",
+    # CXX = "/opt/homebrew/bin/g++",
+}
+
+# --- Configuração de Teste (Opcional, mas Recomendado) ---
+# [tool.cibuildwheel.test]
+# Requerimentos para rodar os testes (ex: pytest)
+# requires = ["pytest"]
+# Comando para executar os testes após a instalação da wheel
+# Use {project} para o diretório raiz do pacote dentro do ambiente de teste
+# test-command = "pytest {project}/tests"
