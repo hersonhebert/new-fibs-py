@@ -66,10 +66,19 @@ manylinux-aarch64-image = "manylinux_2_28" # Se precisar de ARM Linux
 # Verifique se este caminho corresponde à instalação do choco no runner.
 environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin" }
 
-# --- Configuração Específica para macOS ---
-# [tool.cibuildwheel.macos]
-# environment = { } # Geralmente não necessário se o 'brew install gcc' funcionar e o PATH for ajustado
-
+[tool.cibuildwheel.macos]
+# Aumenta a verbosidade para depuração (use 2 ou 3)
+build-verbosity = 2
+# Define explicitamente os compiladores para Meson encontrar os corretos do Homebrew (GCC)
+# ESSENCIAL para gfortran em ARM Macs (macos-14 runner)
+# No macOS Intel (macos-latest runner), o caminho seria /usr/local/bin/gfortran
+# Cibuildwheel executa isso no ambiente *interno* dele, onde o compilador precisa ser encontrado.
+environment = {
+    FC = "/opt/homebrew/bin/gfortran",
+    # Opcional, mas boa prática para garantir consistência se você usa C/C++ também:
+    # CC = "/opt/homebrew/bin/gcc",
+    # CXX = "/opt/homebrew/bin/g++",
+}
 # --- Configuração de Teste (Recomendado) ---
 # test-requires = ["pytest"] # Ou outra ferramenta de teste
 # Comando para rodar os testes após a instalação da wheel construída
