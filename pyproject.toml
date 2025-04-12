@@ -31,3 +31,8 @@ limited-api = false
 packages = ["fibos"]
 [tool.setuptools.package-data]
 fibos = ["radii", "pattern"]
+[tool.cibuildwheel.macos]
+# Certifique-se que a verbosidade está alta (2 ou 3)
+build-verbosity = 2
+# Certifique-se que FC está definido CORRETAMENTE para ARM Mac
+environment = { FC = "/opt/homebrew/bin/gfortran" }
