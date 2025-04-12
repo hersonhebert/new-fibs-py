@@ -67,5 +67,6 @@ manylinux-aarch64-image = "manylinux_2_28" # Se precisar de ARM Linux
 environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin" }
 
 # --- Configuração Específica para macOS ---
-# [tool.cibuildwheel.macos]
-# environment = { } # Geralmente não necessário se o 'brew install gcc' funcionar e o PATH for ajustado
+[tool.cibuildwheel.macos]
+environment = {
+    FC = "/opt/homebrew/bin/gfortran"}
