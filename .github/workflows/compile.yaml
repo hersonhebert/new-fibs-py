@@ -3,44 +3,37 @@ name: Build Wheels
 on:
   push:
     branches:
-      - main # Ou 'master', dependendo do seu branch principal
+      - main  # ou 'master', conforme seu branch principal
     tags:
-      - 'v*' # Executa quando uma tag como v0.1.0 é criada
+      - 'v*'  # Executa quando uma tag como v0.1.0 é criada
   pull_request:
     branches:
-      - main # Ou 'master'
-  workflow_dispatch: # Permite acionar manualmente pela interface do GitHub Actions
+      - main  # ou 'master'
+  workflow_dispatch:  # Permite acionar manualmente pela interface do GitHub Actions
 
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }} for ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # Não cancela outros jobs se um falhar
+      fail-fast: false  # Não cancela outros jobs se um falhar
       matrix:
-        # Defina os SOs desejados
+        # Defina os sistemas operacionais desejados
         os: [ubuntu-latest, windows-latest, macos-latest]
-        # Defina as versões Python (cibuildwheel usa identificadores como cp39, cp310, etc.)
-        # cibuildwheel selecionará as arquiteturas apropriadas por OS (x86_64, arm64 em macOS, etc.)
-        # Vamos focar nas versões CPython (cp)
+        # Defina as versões Python em formato CPython (cp39, cp310, etc.)
         python-version: ['cp39', 'cp310', 'cp311', 'cp312']
-        # Excluir combinações que não fazem sentido ou não são suportadas (opcional)
-        # exclude:
-        #   - os: macos-latest
-        #     python-version: 'cp39' # Exemplo: se cp39 não for suportado no macos-latest runner
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Necessário para buscar tags e histórico para versionamento (se necessário)
-          fetch-depth: 0
+          fetch-depth: 0  # Necessário para buscar tags e histórico para versionamento, se necessário
 
       - name: Set up QEMU (for Linux ARM builds - opcional)
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: all # Ou especifique 'arm64' se só precisar disso
+          platforms: all  # Ou especifique 'arm64' se só precisar disso
 
       - name: Install Fortran compiler (OS specific)
         shell: bash
@@ -49,65 +42,50 @@ jobs:
             sudo apt-get update -y -qq
             sudo apt-get install -y gfortran
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            # O Homebrew GCC geralmente inclui gfortran
-            # Pode já estar presente nos runners mais recentes, mas instalar garante
-            brew install gcc || true # '|| true' para não falhar se já estiver instalado ou falhar temporariamente
-            # Certifique-se de que o gfortran do brew esteja no PATH (geralmente está)
+            # Instala o gcc via Homebrew. O gcc inclui o gfortran,
+            # porém o executável pode estar nomeado como gfortran-<versão>
+            brew install gcc || true
+            # Adiciona o diretório de binários do Homebrew à variável PATH
             echo "$(brew --prefix)/bin" >> $GITHUB_PATH
+            # Se não existir 'gfortran' direto, cria um symlink para o primeiro binário encontrado
+            if [ ! -x /opt/homebrew/bin/gfortran ]; then
+              for file in /opt/homebrew/bin/gfortran-* ; do
+                ln -s "$file" /opt/homebrew/bin/gfortran
+                echo "Criado symlink para: $file -> /opt/homebrew/bin/gfortran"
+                break
+              done
+            fi
           elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            # Usar MSYS2/MinGW-w64 que vem pré-instalado nos runners do GitHub Actions
-            # Certifique-se de que o compilador correto está no PATH
-            # O caminho pode variar ligeiramente dependendo do runner
+            # Nos runners do Windows, o ambiente MSYS2/MinGW-w64 já está instalado
+            # Adiciona o diretório do mingw64 ao PATH
             echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
-            # Verifique a instalação (opcional)
+            # Verifica a instalação (opcional)
             gfortran --version
           fi
 
-      # Não é estritamente necessário 'setup-python' quando se usa cibuildwheel,
-      # mas pode ser útil para instalar o próprio cibuildwheel ou outras ferramentas.
+      # A etapa de setup-python é utilizada para rodar o cibuildwheel
       - name: Set up Python (for cibuildwheel)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Uma versão Python para executar cibuildwheel
+          python-version: '3.11'  # Uma versão Python para executar o cibuildwheel
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.17.* # Use uma versão recente
+        run: python -m pip install cibuildwheel==2.17.*
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          # --- Configuração Essencial do cibuildwheel ---
-
-          # Define quais builds fazer. Use os identificadores da matrix.
-          # O '*' corresponde a todas as arquiteturas válidas para o SO/Python.
+          # Define quais builds serão feitos (usando a versão Python selecionada na matrix)
           CIBW_BUILD: "${{ matrix.python-version }}-*"
-
-          # --- Configurações Específicas para Fortran/Dependências ---
-
-          # Comando a ser executado ANTES do build DENTRO de cada ambiente virtual/conda criado pelo cibuildwheel.
-          # ESSENCIAL para instalar dependências de build como numpy.
-          # Use 'pip' ou 'conda' conforme necessário. Funciona em todos os SOs.
-          CIBW_BEFORE_BUILD: "pip install numpy" # Adicione outras dependências de build aqui, separadas por '&&' ou ';'
-
-          # Linux: Especifica a imagem manylinux a ser usada.
-          # 'manylinux2014' oferece boa compatibilidade. '_2_28' é mais recente.
-          # Use a arquitetura correta (x86_64, aarch64, etc.)
+          # Comando a ser executado ANTES do build para instalar dependências necessárias (como numpy)
+          CIBW_BEFORE_BUILD: "pip install numpy"
+          # Configurações específicas para as imagens manylinux no Linux (ajuste conforme necessário)
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28 # Se construir para ARM Linux
-
-          # --- Configurações Opcionais ---
-
-          # Pular builds específicos (ex: 32-bit Windows se não for necessário)
-          # CIBW_SKIP: "*-win32 *-musllinux*"
-
-          # Aumentar verbosidade para debug
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          # Verbosidade para debug
           CIBW_BUILD_VERBOSITY: "1"
-
-          # Windows: Garante que o compilador MinGW-w64 (gfortran) esteja no PATH do ambiente de build
-          # Cibuildwheel tenta fazer isso, mas ser explícito pode ajudar.
-          # Nota: A sintaxe $PATH:/c/msys64/mingw64/bin funciona no Git Bash (usado pelo cibuildwheel no Windows)
+          # No Windows, garante que o compilador MinGW-w64 (que contém o gfortran) esteja no PATH
           CIBW_ENVIRONMENT_WINDOWS: 'PATH="$PATH:/c/msys64/mingw64/bin"'
-          # Verifique se o caminho C:\msys64\mingw64\bin está correto nos runners atuais.
 
       - name: Upload wheels as Artifacts
         uses: actions/upload-artifact@v4
