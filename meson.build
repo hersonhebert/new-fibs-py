@@ -81,15 +81,5 @@ install_data(
 )
 
 # Install additional data files
-#install_data(['fibos/radii', 'fibos/pattern'],
-#    install_dir: py.get_install_dir() / 'fibos')
-# Instala o diretório 'radii' e seu conteúdo
-install_subdir(
-    'fibos/radii',
-    install_dir: py.get_install_dir() / 'fibos'
-)
-# Instala o diretório 'pattern' e seu conteúdo
-install_subdir(
-    'fibos/pattern',
-    install_dir: py.get_install_dir() / 'fibos'
-)
+install_data(['fibos/radii', 'fibos/pattern'],
+    install_dir: py.get_install_dir() / 'fibos')

@@ -68,4 +68,5 @@ environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\
 
 # --- Configuração Específica para macOS ---
 [tool.cibuildwheel.macos]
+build-verbosity = 2
 # environment = { } # Geralmente não necessário se o 'brew install gcc' funcionar e o PATH for ajustado
