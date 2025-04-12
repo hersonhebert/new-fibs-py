@@ -68,5 +68,4 @@ environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\
 
 # --- Configuração Específica para macOS ---
 [tool.cibuildwheel.macos]
-environment = {
-    FC = "/opt/homebrew/bin/gfortran"}
+environment = {FC = "/opt/homebrew/bin/gfortran"}
