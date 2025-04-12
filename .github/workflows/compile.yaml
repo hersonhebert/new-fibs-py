@@ -3,114 +3,207 @@ name: Build Wheels
 on:
   push:
     branches:
-      - main # Ou 'master', dependendo do seu branch principal
+      - main
     tags:
-      - 'v*' # Executa quando uma tag como v0.1.0 é criada
+      - 'v*'
   pull_request:
     branches:
-      - main # Ou 'master'
-  workflow_dispatch: # Permite acionar manualmente pela interface do GitHub Actions
+      - main
+  workflow_dispatch:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }} for ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
+    # Nome do job mais descritivo, incluindo arquitetura
+    name: Build wheels on ${{ matrix.os }} / ${{ matrix.arch }} (Python ${{ matrix.python-version }})
+    # Seleciona o runner correto baseado na matriz
+    runs-on: ${{ matrix.runner }}
     strategy:
-      fail-fast: false # Não cancela outros jobs se um falhar
+      fail-fast: false
       matrix:
-        # Defina os SOs desejados
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # Defina as versões Python (cibuildwheel usa identificadores como cp39, cp310, etc.)
-        # cibuildwheel selecionará as arquiteturas apropriadas por OS (x86_64, arm64 em macOS, etc.)
-        # Vamos focar nas versões CPython (cp)
+        # Define as plataformas base
+        os: [ubuntu, windows, macos]
+        # Define as versões Python CPython (cp)
         python-version: ['cp39', 'cp310', 'cp311', 'cp312']
-        # Excluir combinações que não fazem sentido ou não são suportadas (opcional)
+        # Define as arquiteturas base (cibuildwheel geralmente seleciona 'auto')
+        arch: [auto]
+
+        # Inclusões específicas para mapear OS/Arch para Runners corretos
+        include:
+          # Linux (x86_64 é o padrão 'auto' no ubuntu-latest)
+          - os: ubuntu
+            runner: ubuntu-latest
+            arch: x86_64 # Ser explícito
+          # Windows (x86_64 é o padrão 'auto' no windows-latest)
+          - os: windows
+            runner: windows-latest
+            arch: x86_64 # Ser explícito
+          # macOS Intel
+          - os: macos
+            runner: macos-latest # Normalmente macos-13 ou macos-12 (Intel)
+            arch: x86_64 # Arquitetura Intel
+          # macOS ARM
+          - os: macos
+            runner: macos-14 # Runner ARM64 (Apple Silicon)
+            arch: arm64 # Arquitetura ARM
+
+        # Excluir combinações se necessário (ex: Python 3.9 no macOS 14 se não for suportado)
         # exclude:
-        #   - os: macos-latest
-        #     python-version: 'cp39' # Exemplo: se cp39 não for suportado no macos-latest runner
+        #   - runner: macos-14
+        #     python-version: 'cp39'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Necessário para buscar tags e histórico para versionamento (se necessário)
-          fetch-depth: 0
+          fetch-depth: 0 # Necessário para ferramentas como setuptools-scm
 
-      - name: Set up QEMU (for Linux ARM builds - opcional)
-        if: runner.os == 'Linux'
+      - name: Set up QEMU (for potential non-native Linux builds)
+        # Necessário apenas se você adicionar archs como 'aarch64' para 'ubuntu-latest' na matriz
+        if: runner.os == 'Linux' && matrix.arch != 'x86_64'
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: all # Ou especifique 'arm64' se só precisar disso
+          platforms: ${{ matrix.arch }}
 
-      - name: Install Fortran compiler (OS specific)
+      # --- Instalação e Verificação do Compilador Fortran ---
+
+      - name: Install and Verify Fortran compiler (Linux)
+        if: runner.os == 'Linux'
         shell: bash
         run: |
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            sudo apt-get update -y -qq
-            sudo apt-get install -y gfortran
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            # O Homebrew GCC geralmente inclui gfortran
-            # Pode já estar presente nos runners mais recentes, mas instalar garante
-            brew install gcc || true # '|| true' para não falhar se já estiver instalado ou falhar temporariamente
-            # Certifique-se de que o gfortran do brew esteja no PATH (geralmente está)
-            echo "$(brew --prefix)/bin" >> $GITHUB_PATH
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            # Usar MSYS2/MinGW-w64 que vem pré-instalado nos runners do GitHub Actions
-            # Certifique-se de que o compilador correto está no PATH
-            # O caminho pode variar ligeiramente dependendo do runner
-            echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
-            # Verifique a instalação (opcional)
-            gfortran --version
+          echo "Installing gfortran on Linux..."
+          sudo apt-get update -y -qq
+          sudo apt-get install -y gfortran
+          echo "Verifying gfortran installation..."
+          which gfortran
+          gfortran --version || echo "ERROR: gfortran --version failed!"
+
+      - name: Install and Verify Fortran compiler (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          echo "Attempting to install GCC via Homebrew..."
+          # Instalar ou atualizar GCC (contém gfortran)
+          brew install gcc || echo "WARNING: 'brew install gcc' failed or package already installed. Continuing..."
+
+          # Define o caminho esperado para gfortran baseado na arquitetura do runner
+          EXPECTED_GFORTRAN_PATH=""
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            EXPECTED_GFORTRAN_PATH="/opt/homebrew/bin/gfortran"
+          else # x86_64
+            EXPECTED_GFORTRAN_PATH="/usr/local/bin/gfortran"
+            # O link simbólico do brew gcc pode estar em /usr/local/bin
+            # Ou podemos precisar do caminho completo do brew prefix gcc
+            if [[ ! -f "$EXPECTED_GFORTRAN_PATH" ]]; then
+               FULL_GCC_PATH=$(brew --prefix gcc)/bin/gfortran || echo "Could not get brew prefix for gcc"
+               if [[ -n "$FULL_GCC_PATH" && -f "$FULL_GCC_PATH" ]]; then
+                  EXPECTED_GFORTRAN_PATH=$FULL_GCC_PATH
+               fi
+            fi
           fi
 
-      # Não é estritamente necessário 'setup-python' quando se usa cibuildwheel,
-      # mas pode ser útil para instalar o próprio cibuildwheel ou outras ferramentas.
-      - name: Set up Python (for cibuildwheel)
+          echo "--- Verifying gfortran installation IMMEDIATELY after brew install ---"
+          echo "Checking for existence and execution of: ${EXPECTED_GFORTRAN_PATH}"
+
+          if [[ -f "${EXPECTED_GFORTRAN_PATH}" && -x "${EXPECTED_GFORTRAN_PATH}" ]]; then
+            echo "SUCCESS: gfortran found at ${EXPECTED_GFORTRAN_PATH} and is executable."
+            echo "Attempting to get version:"
+            "${EXPECTED_GFORTRAN_PATH}" --version
+          else
+            echo "ERROR: ${EXPECTED_GFORTRAN_PATH} was NOT found or is NOT executable!"
+            echo "Listing potential locations:"
+            ls -l "/opt/homebrew/bin/gfortran"* 2>/dev/null || echo "No gfortran found in /opt/homebrew/bin"
+            ls -l "/usr/local/bin/gfortran"* 2>/dev/null || echo "No gfortran found in /usr/local/bin"
+            GCC_PREFIX_BIN=$(brew --prefix gcc)/bin 2>/dev/null || echo "Could not get brew prefix for gcc"
+            if [[ -n "$GCC_PREFIX_BIN" && -d "$GCC_PREFIX_BIN" ]]; then
+                ls -l "$GCC_PREFIX_BIN"/gfortran* 2>/dev/null || echo "No gfortran found in brew prefix bin ($GCC_PREFIX_BIN)"
+            fi
+            # Considerar falhar o build aqui (exit 1) se a verificação falhar
+          fi
+
+          echo "Setting up PATH for subsequent non-cibuildwheel steps"
+          # Adicionar ambos os caminhos comuns + caminho específico do GCC ao GITHUB_PATH
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+          GCC_BIN_DIR=$(brew --prefix gcc)/bin || echo "Could not find brew prefix for gcc bin"
+          if [[ -n "$GCC_BIN_DIR" && -d "$GCC_BIN_DIR" ]]; then
+            echo "Adding GCC bin directory to GITHUB_PATH: $GCC_BIN_DIR"
+            echo "$GCC_BIN_DIR" >> $GITHUB_PATH
+          fi
+
+      - name: Install and Verify Fortran compiler (Windows)
+        if: runner.os == 'Windows'
+        # Usar powershell para choco
+        shell: powershell
+        run: |
+          echo "Installing MinGW (gfortran) via Chocolatey..."
+          # Instalar explicitamente para garantir a presença e versão
+          choco install mingw --yes --no-progress --params "/InstallDir:C:\MinGW"
+
+          # Caminho esperado usado no pyproject.toml [tool.cibuildwheel.windows].environment.PATH
+          $mingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+
+          echo "--- Verifying gfortran installation ---"
+          echo "Checking expected path: $mingwPath"
+
+          if (Test-Path "$mingwPath\gfortran.exe") {
+            echo "SUCCESS: gfortran.exe found at expected path used in pyproject.toml."
+            echo "Adding $mingwPath to GITHUB_PATH for immediate verification step"
+            echo "$mingwPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            # Tentar executar --version
+            echo "Attempting: gfortran --version"
+            gfortran --version
+            if ($LASTEXITCODE -ne 0) {
+                echo "WARNING: gfortran --version command failed even though file exists."
+            }
+          } else {
+            echo "ERROR: gfortran.exe NOT found at expected path $mingwPath."
+            echo "Check pyproject.toml [tool.cibuildwheel.windows] environment PATH setting."
+            echo "Searching for gfortran.exe elsewhere..."
+            Get-Command gfortran.exe -ErrorAction SilentlyContinue | Format-List
+            # Considerar falhar o build aqui (exit 1)
+          }
+
+      - name: Set up Python (for cibuildwheel runner)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Uma versão Python para executar cibuildwheel
+          # Python usado para executar o script cibuildwheel em si
+          python-version: '3.11'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.17.* # Use uma versão recente
+        run: python -m pip install --upgrade pip cibuildwheel==2.17.* # Use uma versão recente
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          # --- Configuração Essencial do cibuildwheel ---
-
-          # Define quais builds fazer. Use os identificadores da matrix.
-          # O '*' corresponde a todas as arquiteturas válidas para o SO/Python.
-          CIBW_BUILD: "${{ matrix.python-version }}-*"
-
-          # --- Configurações Específicas para Fortran/Dependências ---
-
-          # Comando a ser executado ANTES do build DENTRO de cada ambiente virtual/conda criado pelo cibuildwheel.
-          # ESSENCIAL para instalar dependências de build como numpy.
-          # Use 'pip' ou 'conda' conforme necessário. Funciona em todos os SOs.
-          CIBW_BEFORE_BUILD: "pip install numpy" # Adicione outras dependências de build aqui, separadas por '&&' ou ';'
-
-          # Linux: Especifica a imagem manylinux a ser usada.
-          # 'manylinux2014' oferece boa compatibilidade. '_2_28' é mais recente.
-          # Use a arquitetura correta (x86_64, aarch64, etc.)
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28 # Se construir para ARM Linux
-
-          # --- Configurações Opcionais ---
-
-          # Pular builds específicos (ex: 32-bit Windows se não for necessário)
-          # CIBW_SKIP: "*-win32 *-musllinux*"
-
-          # Aumentar verbosidade para debug
-          CIBW_BUILD_VERBOSITY: "1"
-
-          # Windows: Garante que o compilador MinGW-w64 (gfortran) esteja no PATH do ambiente de build
-          # Cibuildwheel tenta fazer isso, mas ser explícito pode ajudar.
-          # Nota: A sintaxe $PATH:/c/msys64/mingw64/bin funciona no Git Bash (usado pelo cibuildwheel no Windows)
-          CIBW_ENVIRONMENT_WINDOWS: 'PATH="$PATH:/c/msys64/mingw64/bin"'
-          # Verifique se o caminho C:\msys64\mingw64\bin está correto nos runners atuais.
+          # Define quais builds fazer, combinando versão Python, OS e Arquitetura da matriz.
+          # Ex: cp311-macos_arm64, cp310-windows_x86_64
+          # A maioria das outras configurações (BEFORE_BUILD, verbosity, env vars específicas)
+          # agora vêm do pyproject.toml!
+          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.os }}_${{ matrix.arch }}"
 
       - name: Upload wheels as Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          # Nome do artefato inclui OS e Arquitetura para clareza
+          name: python-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python-version }}
           path: ./wheelhouse/*.whl
+
+  # --- JOB OPCIONAL: Publicar no PyPI ---
+  # (O job de publicação pode permanecer como antes, usando os artefatos baixados)
+  # publish_wheels:
+  #   name: Publish wheels to PyPI
+  #   needs: build_wheels
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/v')
+  #   permissions:
+  #     actions: read # para download-artifact
+  #     id-token: write # para pypi-publish (Trusted Publishing)
+  #   steps:
+  #     - name: Download all wheels artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         pattern: python-wheels-*
+  #         path: dist/
+  #         merge-multiple: true
+  #     - name: Publish package distributions to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
