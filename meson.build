@@ -58,6 +58,7 @@ python_sources = [
     'fibos/read_prot.py',
     'fibos/respak.py',
     'fibos/utils.py',
+    'fibos/set_parameters.py',
 ]
 
 # Install Python files
@@ -80,5 +81,5 @@ install_data(
 )
 
 # Install additional data files
-install_data('fibos/radii',
+install_data(['fibos/radii', 'fibos/pattern'],
     install_dir: py.get_install_dir() / 'fibos')

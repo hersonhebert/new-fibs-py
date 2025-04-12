@@ -36,4 +36,4 @@ limited-api = false
 packages = ["fibos"]
 
 [tool.setuptools.package-data]
-fibos = ["radii"]
+fibos = ["radii", "pattern"]

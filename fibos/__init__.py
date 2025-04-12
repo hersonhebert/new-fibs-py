@@ -21,3 +21,6 @@ from .utils import _load_library
 # Agora, importe os módulos desejados para expor suas funções
 from .manage_os import occluded_surface
 from .respak import osp
+from .set_parameters import get_radii
+from .set_parameters import set_radii
+from .set_parameters import reset_radii
