@@ -68,11 +68,9 @@ environment = { PATH="{env_path};C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\
 
 # --- Configuração Específica para macOS ---
 [tool.cibuildwheel.macos]
-build-verbosity = 2
-environment = {
-    FC = "/opt/homebrew/bin/gfortran",
+build-verbosity* = 2
+environment = {FC = "/opt/homebrew/bin/gfortran"}
     # Opcional: Definir CC/CXX se você tiver C/C++ também, para garantir consistência
     # CC = "/opt/homebrew/bin/gcc",
     # CXX = "/opt/homebrew/bin/g++",
-}
 # environment = { } # Geralmente não necessário se o 'brew install gcc' funcionar e o PATH for ajustado
