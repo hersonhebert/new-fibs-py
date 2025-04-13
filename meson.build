@@ -1,6 +1,6 @@
 project('fibos', 
         ['c', 'fortran'],
-        version: '2.1.0',
+        version: '2.1.1',
 	license: 'MIT',
         default_options: [
             'buildtype=release',
