@@ -34,7 +34,7 @@ jobs:
       - name: Publicar no TestPyPI
         if: ${{ github.event.inputs.environment == 'testpypi' }}
         run: |
-          twine upload --repository-url https://test.pypi.org/project/fibos/ dist/*
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -44,5 +44,5 @@ jobs:
         run: |
           twine upload dist/*
         env:
-          TWINE_USERNAME: __token__
+          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
