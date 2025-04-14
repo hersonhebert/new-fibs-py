@@ -48,7 +48,7 @@ parameter and returns the results as a table summarized by residue.
 3.  **`get_radii()`**: Returns the Van der Waals radii values employed in the 
 surface occlusion calculations. These are the values used in each computation.
 
-4.  **`set_radii(radii_values)`**: nables customization of the radii values used
+4.  **`set_radii(radii_values)`**: Enables customization of the radii values used
 in surface occlusion calculations. To specify new values, the function accepts a 
 DataFrame as its parameter.
 
