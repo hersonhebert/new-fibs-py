@@ -14,7 +14,7 @@ c f77
 
 c:sims-main
 c
-        subroutine runSIMS (method)
+        subroutine runSIMS (method, density)
 
         include "surf-sims.h"
 	include "input_sims.h"
@@ -26,7 +26,7 @@ c
 	integer smdotn_at(maxatm),smdotstartn_at(maxatm)
         integer  ndots
         integer method
-        real*8 d_probe,dotden
+        real*8 d_probe,dotden,density
 	character*8 hour
 	character*9 day
 	integer iday,iyear
@@ -247,10 +247,10 @@ c assign Rad
 
 c do SIMS calculation:
               IF(method .eq. 1)then
-                dotden_h=5.0
+                dotden_h=density
               END IF
               IF(method .eq. 2)then
-                dotden_h=5.0
+                dotden_h=density
               END IF
               dotden=dotden_h
               rp_rpr=1.4

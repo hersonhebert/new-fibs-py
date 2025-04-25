@@ -19,7 +19,7 @@ MAX_AT = 50000
 IRESF = 1
 
 
-def occluded_surface(pdb,method = "FIBOS"):
+def occluded_surface(pdb,method = "FIBOS", density_dots = 5.0):
     remove_files()
     #create_folder(pdb)
     source_path = os.getcwd()
@@ -74,7 +74,7 @@ def occluded_surface(pdb,method = "FIBOS"):
             os.remove(ray_remove)
         if os.path.exists(pack_remove):
             os.remove(pack_remove)
-        main_intermediary.call_main(IRESF,iresl,MAX_RES,MAX_AT,meth)
+        main_intermediary.call_main(IRESF,iresl,MAX_RES,MAX_AT,meth, density_dots)
         remove_files()
         file_name = change_files(pdb)
         from_path = source_path+"/fibos_files"

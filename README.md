@@ -35,7 +35,7 @@ Tested on: 3.10, 3.11, 3.12
 
 ## Main functions:
 
-1.  **`occluded_surface(pdb, method = "FIBOS")`**: Implements the Occluded Surface 
+1.  **`occluded_surface(pdb, method = "FIBOS", density_dots = 5.0)`**: Implements the Occluded Surface 
 algorithm, generating points, areas, and normals for each atom. As parameters it 
 accepts a PDB id (or the path to a local PDB file) and a method selection — either 
 the classic 'OS' or the default 'FIBOS'. The function returns the results as a table 
@@ -62,7 +62,7 @@ import fibos
 import os
 
 # Calculate FIBOS per atom and create .srf files in fibos_files folder
-pdb_fibos = fibos.occluded_surface("1fib", method="FIBOS")
+pdb_fibos = fibos.occluded_surface("1fib", method="FIBOS", density_dots = 5.0)
 
 # Show first 3 rows of pdb_fibos table
 print(pdb_fibos.head(3))
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     # Calculate in parallel FIBOS per PDBid 
     # Create .srf files in fibos_files folder
     # Return FIBOS tables in pdb_fibos list
-    worker_with_params = partial(occluded_surface_worker, method="FIBOS")
+    worker_with_params = partial(occluded_surface_worker, method="FIBOS", density_dots = 5.0)
     with ProcessPoolExecutor(max_workers=ideal_cores) as executor:
         pdb_fibos = list(executor.map(worker_with_params, pdb_paths))
 
