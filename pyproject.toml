@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     {name = "Herson Hebert Mendes Soares"}
 ]
-requires-python = ">3.8" # Mantido >=3.8, mas o workflow focará em 3.9+
+requires-python = ">=3.9" # Mantido >=3.8, mas o workflow focará em 3.9+
 dependencies = [
     "numpy>=1.22.4", # Dependência de runtime
     "biopython>=1.84",
