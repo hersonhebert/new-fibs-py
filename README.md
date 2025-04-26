@@ -24,14 +24,14 @@ Tested on:
 - **Windows**: Windows 11
 - **Mac**: MacOS 15.0.1
 
-## Compilers
-
-- gfortran
-- gcc
-
 ## Python versions
 
 Tested on: 3.10, 3.11, 3.12
+
+## Compilers to different Python Versions
+
+- gfortran
+- gcc
 
 ## Main functions:
 
