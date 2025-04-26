@@ -26,7 +26,11 @@ def occluded_surface(pdb,method = "FIBOS", density_dots = 5.0):
     change = False
     name_pdb = pdb
     if not os.path.exists("fibos_files"):
-        os.makedirs("fibos_files")
+        try:
+            os.makedirs("fibos_files")
+        except FileExistsError:
+            pass
+
     if not (pdb.endswith(".pdb")):
             arq_aux = pdb + ".pdb"
             if os.path.exists(arq_aux):
