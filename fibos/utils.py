@@ -13,9 +13,9 @@ def verify_gcc():
         raise ImportError("GCC not found in PATH. This may mean that GCC is not installed or that the PATH is not configured correctly.")
     
 def _load_library(name):
-    verify_gcc()
     package_dir = os.path.abspath(os.path.dirname(__file__))
     if platform.system() == 'Windows':
+        verify_gcc()
         lib_name = f'{name}.dll'
     elif platform.system() == 'Darwin':
         lib_name = f'{name}.dylib'
