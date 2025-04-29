@@ -28,9 +28,8 @@ Tested on:
 
 Tested on: 3.10, 3.11, 3.12
 
-## Compilers to different Python Versions
+## Requiremnt to Install on Windows
 
-- gfortran
 - gcc
 
 ## Main functions:
