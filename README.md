@@ -28,9 +28,99 @@ Tested on:
 
 Tested on: 3.10, 3.11, 3.12
 
-## Requiremnt to Install on Windows
+## Compilers
 
+- gfortran
 - gcc
+
+## Python versions
+
+Tested on: 3.9, 3.10, 3.11, 3.12, 3.13
+
+## Instalations
+
+### Preliminary:
+
+Some preliminary actions according to OS:
+
+#### Linux (Ubuntu)
+
+Install gfortran, Python dev and venv:
+```
+$ sudo apt install gfortran
+$ sudo apt install python3.x-dev python3.x-venv
+```
+where "x" is your Python version.
+
+#### Windows
+Install Desktop Development with C++ from Microsoft C++ Build Tools from:
+```
+https://visualstudio.microsoft.com/visual-cpp-build-tools/ 
+```
+
+Install gfortran (version 13.2+):
+```
+http://www.equation.com/servlet/equation.cmd?fa=fortran
+```
+
+#### MacOS
+
+Install Homebrew:
+```
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/
+HEAD/install.sh)”
+```
+
+In your shell, set the PATH to include the Homebrew bin folder by adding it into 
+the .zshrc file
+
+```
+export PATH= "/path/to/homebrew/bin:$PATH"
+```
+where "/path/to/homebrew/bin" is the actual homebrew path in your system. So, reload it:
+
+```
+$ source ~/.zshrc
+```
+
+Install gfortran and gcc from:
+
+```
+$ brew install gfortran
+$ brew install gcc
+
+```
+
+### Virtual environment (Venv) 
+
+It is highly recommended to work with virtual environments (Venv or Conda) in Python. 
+We show below how to create Venv:
+
+```
+# From shell terminal, in working directory:
+# Create a virtual environment ".venv"
+
+$ python3.x -m venv .venv
+(where "x" is your Python version.)
+
+# Activate the virtual environment:
+## Mac/Linux
+$ source .venv/bin/activate
+
+## Windows
+$ .venv\Scripts\activate
+
+# The prompt will change to something like:
+(.venv)$  
+```
+
+### Basic Instalations
+
+Install fibos:
+
+```         
+(.venv)$ pip install fibos
+```
 
 ## Main functions:
 
