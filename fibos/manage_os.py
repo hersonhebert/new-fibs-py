@@ -20,6 +20,65 @@ IRESF = 1
 
 
 def occluded_surface(pdb,method = "FIBOS", density_dots = 5.0):
+    """
+    Occluded Surface (OS)
+
+    The Occluded Surface (OS) algorithm is a widely used approach for analyzing atomic packing in biomolecules.
+    This function is part of the FIBOS package, which extends the OS methodology with enhancements.
+    The `occluded_surface` function calculates OS per atom.
+
+    Parameters
+    ----------
+    pdb : str
+        Either a 4-character PDB ID (the structure will be fetched from the RCSB repository)
+        or a path to a local PDB file.
+    method : str, optional
+        Method to be used for dot distribution:
+        - 'OS': Classic approach, radial coverage with a fixed axis reference.
+        - 'FIBOS' (default): Uses Fibonacci spirals for distributing the dots, reducing axial anisotropy
+          and providing more uniform point distribution over the sphere.
+    density_dots : float, optional
+        Density of dots used for surface occlusion calculation. Higher values produce more detailed surfaces.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A table with the following columns:
+        
+        - 'ATOM': Atomic contacts for each atom.
+        - 'NUMBER OF POINTS': Number of dots (surface patches) on each atom.
+        - 'AREA': Total area of all dots.
+        - 'RAYLENGTH': Average length of normals normalized by 2.8 Å (diameter of water). Values close to 1 indicate poor packing.
+        - 'DISTANCE': Average distance of atomic contacts in Å.
+
+    Notes
+    -----
+    The OS method (Pattabiraman et al., 1995) distributes dots across atomic surfaces. Each dot has a normal vector
+    that either contacts a neighboring atom's van der Waals surface (occluded) or extends into solvent (non-occluded).
+    Only occluded dots are considered when calculating surface metrics. This allows inference of local packing density
+    at atomic, residue, and molecular levels.
+
+    For more information, see:
+        - Fleming et al. (2000)
+        - Soares et al. (2024)
+
+    References
+    ----------
+    Fleming PJ, Richards FM (2000). Protein packing: Dependence on protein size, secondary structure
+    and amino acid composition. https://doi.org/10.1006/jmbi.2000.3750
+
+    Pattabiraman N, Ward KB, Fleming PJ (1995). Occluded molecular surface: Analysis of protein packing.
+    https://doi.org/10.1002/jmr.300080603
+
+    Soares HHM, Romanelli JPR, Fleming PJ, da Silveira CH (2024). bioRxiv. https://doi.org/10.1101/2024.11.01.621530
+
+    Examples
+    --------
+    >>> from fibos import occluded_surface, osp
+    >>> df = occluded_surface("1ptx", method="FIBOS", density_dots=5.0)
+    >>> osp_data = osp("fibos_files/prot_1ptx.srf")  # optional: analyze per residue
+    """
+
     remove_files()
     #create_folder(pdb)
     source_path = os.getcwd()

@@ -126,8 +126,8 @@ Install fibos:
 
 1.  **`occluded_surface(pdb, method = "FIBOS", density_dots = 5.0)`**: Implements the Occluded Surface 
 algorithm, generating points, areas, and normals for each atom. As parameters it 
-accepts a PDB id (or the path to a local PDB file) and a method selection — either 
-the classic 'OS' or the default 'FIBOS'. The function returns the results as a table 
+accepts a PDB id (or the path to a local PDB file), a method selection — either 
+the classic 'OS' or the default 'FIBOS' and the density dots values. The function returns the results as a table 
 and creates a file named `prot_PDBid.srf` in the `fibos_file` directory.
 
 2.  **`osp(file)`**: Implements the Occluded Surface Packing (OSP) metric for 
