@@ -26,7 +26,7 @@ Tested on:
 
 ## Python versions
 
-Tested on: 3.10, 3.11, 3.12
+Tested on: 3.10, 3.11, 3.12, 3.13
 
 ## Compilers
 
