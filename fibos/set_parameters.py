@@ -44,9 +44,9 @@ def get_radii():
     path_abs = os.path.abspath(path_pack)
     path_abs = path_abs+"/radii"
     larguras_colunas = [11, 4] # Largura do campo 1, Largura do campo 2
-    nomes_colunas = ['ATOM', 'RAY']
+    nomes_colunas = ['ATOM', 'RADIUS']
     try:
-        radii_value = pd.read_fwf(path_abs, widths=larguras_colunas, header=None, names=nomes_colunas)
+        radii_table = pd.read_fwf(path_abs, widths=larguras_colunas, header=None, names=nomes_colunas)
 
     except FileNotFoundError:
         print(f"Err: radii file not found.")
@@ -54,9 +54,9 @@ def get_radii():
     except Exception as e:
         print(f"Err to read file: {e}")
         exit()
-    return(radii_value)
+    return(radii_table)
 
-def set_radii(radii_value):
+def set_radii(radii_table):
         """
         Change Radii Values
 
@@ -65,7 +65,7 @@ def set_radii(radii_value):
 
         Parameters
         ----------
-        radii_values : pandas.DataFrame
+        radii_table : pandas.DataFrame
             A DataFrame containing atomic radii values. It must follow the same
             structure as the one returned by `get_radii()`.
 
@@ -86,7 +86,7 @@ def set_radii(radii_value):
         >>> from fibos import get_radii, set_radii
         >>> radii = get_radii()
         >>> print(radii.head(3))
-        >>> radii.at[0, "RAY"] = 2.15  # Modify radius of first atom
+        >>> radii.at[0, "RADIUS"] = 2.15  # Modify radius of first atom
         >>> set_radii(radii)
         >>> print(get_radii().head(3))  # Confirm the update
         """
@@ -97,8 +97,8 @@ def set_radii(radii_value):
         path_radii = path_abs+"/radii"
         try:
             with open(path_radii, 'w') as f:
-                for index, row in radii_value.iterrows():
-                    linha_formatada = f"{str(row['ATOM']):<11s}{row['RAY']:.2f}\n"
+                for index, row in radii_table.iterrows():
+                    linha_formatada = f"{str(row['ATOM']):<11s}{row['RADIUS']:.2f}\n"
                     f.write(linha_formatada)#
 
         except Exception as e:
@@ -130,7 +130,7 @@ def reset_radii():
     >>> from fibos import get_radii, set_radii, reset_radii
     >>> radii = get_radii()
     >>> print(radii.head(3))  # View current radii
-    >>> radii.at[0, "RAY"] = 2.15  # Modify one value
+    >>> radii.at[0, "RADIUS"] = 2.15  # Modify one value
     >>> set_radii(radii)
     >>> print(get_radii().head(3))  # Confirm modification
     >>> reset_radii()
